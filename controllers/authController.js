@@ -43,6 +43,7 @@ exports.getUser = async (req, res, next) => {
       email: currentUser.email,
       name: currentUser.name,
       friendRequests: currentUser.acceptFriendRequests.length,
+      friends: currentUser.friends,
     });
   } catch (err) {
     console.error(err);
