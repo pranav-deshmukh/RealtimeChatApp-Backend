@@ -8,18 +8,29 @@ exports.createChat = async (req, res) => {
   try {
     const currentUser = await User.findOne({ email: email1.toLowerCase() });
     const targetUser = await User.findOne({ email: email2.toLowerCase() });
-    console.log(targetUser);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ message: "One or both users not found" });
+    }
+
     const firstId = currentUser._id;
     const secondId = targetUser._id;
 
-    const firstMemberName = currentUser.name;
-    const secondMemberName = targetUser.name;
-
-    const chat = await chatModel.findOne({
-      members: { $all: [firstId, secondId] },
+    const existingChat = await chatModel.findOne({
+      members: {
+        $all: [
+          { $elemMatch: { userId: firstId } },
+          { $elemMatch: { userId: secondId } },
+        ],
+      },
     });
 
-    if (chat) return res.status(200).json(chat);
+    if (existingChat) {
+      return res.status(200).json(existingChat);
+    }
+
+    const firstMemberName = currentUser.name;
+    const secondMemberName = targetUser.name;
 
     const newChat = new chatModel({
       members: [
